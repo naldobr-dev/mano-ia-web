@@ -1,0 +1,102 @@
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Define o tema Dark como padrão */
+html { color-scheme: dark; }
+
+/* ── Default (dark) theme variables ──────────────────────────────────────── */
+:root {
+  --bg-primary:     #0e0f14;
+  --bg-secondary:   #13151e;
+  --bg-card:        #1c1f2a;
+  --bg-input:       #0e0f14;
+  --bg-setting-header: linear-gradient(to bottom, rgba(22, 24, 34, 0.55), transparent);
+  --border:         #2a2d3a;
+  --border-subtle:  #1e2133;
+  --border-focus:   #4f6ef7;
+  --text-primary:   #eef0f8;
+  --text-secondary: #d0d4e8;
+  --text-muted:     #8b90a7;
+  --text-faint:     #555870;
+  --accent:         #4f6ef7;
+  --accent-hover:   #6b85f8;
+  --accent-soft:    rgba(79,110,247,0.12);
+  --accent-glow:    rgba(79,110,247,0.25);
+  --bubble-user:    linear-gradient(135deg,#4f6ef7,#6b48f5);
+  --bubble-ai:      #1e2133;
+  --bubble-ai-border: #2a2d3a;
+  --bubble-ai-text: #d0d4e8;
+  --chat-date-separator-bg: rgba(30, 33, 51, 0.18);
+  --sidebar-bg:     #13151e;
+  --scrollbar:      #2a2d3a;
+  --success:        #3ecf8e;
+  --error:          #f7614f;
+  --google-red:     #ea4335;
+  --btn-close-text: #8b90a7;
+  --bg-st-row-active: rgba(255, 255, 255, 0.03);  
+}
+
+/* ── Light theme overrides ────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-primary:     #f0f2f8;
+  --bg-secondary:   #e4e7f0;
+  --bg-card:        #ffffff;
+  --bg-input:       #f7f8fc;
+  --bg-setting-header: linear-gradient(to bottom, rgb(157 163 193 / 55%), transparent);
+  --border:         #d0d4e8;
+  --border-subtle:  #e4e7f0;
+  --text-primary:   #0e0f14;
+  --text-secondary: #3a3e55;
+  --text-muted:     #6b7090;
+  --text-faint:     #484a57;
+  --accent-soft:    rgba(79,110,247,0.10);
+  --accent-glow:    rgba(79,110,247,0.18);
+  --bubble-ai:      #ffffff;
+  --bubble-ai-border: #d0d4e8;
+  --bubble-ai-text: #0e0f14;
+  --chat-date-separator-bg: rgba(106, 114, 130, 0.10);
+  --sidebar-bg:     #e8eaf4;
+  --scrollbar:      #c4c8de;
+  --btn-close-text: #414141;
+  --bg-st-row-active: rgba(52, 100, 172, 0.6);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* área com estilo padrão */
+.chat-messages * {
+  margin: revert;
+  padding: revert;
+  box-sizing: revert;
+}
+
+.chat-messages ol, .chat-messages ul {
+  margin-left: 0.3em;
+  margin-bottom: 0.5em;
+}
+
+.chat-messages ol ol, .chat-messages ol ul, .chat-messages ul ul, .chat-messages ul ol {
+  margin-left: -1.7em;
+  margin-bottom: 0.5em;
+}
+
+.chat-messages hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient( to right, transparent, var(--border), var(--accent) 50%, var(--border), transparent );
+  margin: 16px 0;
+}
+
+html, body, #root { height: 100%; width: 100%; }
+
+body {
+  font-family: 'Sora', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s, color 0.25s;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }
