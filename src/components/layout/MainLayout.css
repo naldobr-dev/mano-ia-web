@@ -21,6 +21,7 @@
   overflow: auto;
   padding: 2em;
   padding-top: 14em;
+  background: linear-gradient(90deg, var(--bg-primary), var(--bg-secondary));
 }
 
 /* Mobile overlay */

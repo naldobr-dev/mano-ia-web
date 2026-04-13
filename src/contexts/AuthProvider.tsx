@@ -7,6 +7,7 @@ import {
   signInWithPopup,
   signOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
   updateProfile,
   reload,
   type User,
@@ -39,6 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName });
     setUser({ ...cred.user });
+
+    // Envia o e-mail de confirmação
+    await sendEmailVerification(cred.user);
   };
   const logout = async () => { await signOut(auth); };
   const resetPassword = async (email: string) => { await sendPasswordResetEmail(auth, email); };
