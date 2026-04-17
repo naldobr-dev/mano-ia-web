@@ -18,18 +18,20 @@ function assertAuth(request: { auth?: { uid: string } }): string {
 // ─── clearUserData ────────────────────────────────────────────────────────────
 // Apaga TUDO dentro de users/{uid}/personas (todas as personas, conversas e mensagens).
 
-export const clearUserData = onCall(async (request) => {
-    const uid = assertAuth(request);
+export const clearUserData = onCall(
+    { region: "southamerica-east1" },
+    async (request) => {
+        const uid = assertAuth(request);
 
-    try {
-        const firestore = admin.firestore();
-        await firestore.recursiveDelete(firestore.collection(`users/${uid}/personas`));
-        return { success: true };
-    } catch (error) {
-        console.error("clearUserData error:", error);
-        throw new HttpsError("internal", "Erro ao limpar dados.");
-    }
-});
+        try {
+            const firestore = admin.firestore();
+            await firestore.recursiveDelete(firestore.collection(`users/${uid}/personas`));
+            return { success: true };
+        } catch (error) {
+            console.error("clearUserData error:", error);
+            throw new HttpsError("internal", "Erro ao limpar dados.");
+        }
+    });
 
 // ─── deletePersona ────────────────────────────────────────────────────────────
 // Apaga um persona específico e TUDO abaixo dele:
@@ -39,28 +41,30 @@ export const clearUserData = onCall(async (request) => {
 //
 // Parâmetros esperados no data: { personaId: string }
 
-export const deletePersona = onCall(async (request) => {
-    const uid = assertAuth(request);
+export const deletePersona = onCall(
+    { region: "southamerica-east1" },
+    async (request) => {
+        const uid = assertAuth(request);
 
-    const { personaId } = request.data as { personaId?: string };
+        const { personaId } = request.data as { personaId?: string };
 
-    if (!personaId || typeof personaId !== "string") {
-        throw new HttpsError("invalid-argument", "O campo 'personaId' é obrigatório.");
-    }
+        if (!personaId || typeof personaId !== "string") {
+            throw new HttpsError("invalid-argument", "O campo 'personaId' é obrigatório.");
+        }
 
-    try {
-        const firestore = admin.firestore();
-        const personaRef = firestore.doc(`users/${uid}/personas/${personaId}`);
+        try {
+            const firestore = admin.firestore();
+            const personaRef = firestore.doc(`users/${uid}/personas/${personaId}`);
 
-        // recursiveDelete apaga o documento + todas as subcoleções abaixo
-        await firestore.recursiveDelete(personaRef);
+            // recursiveDelete apaga o documento + todas as subcoleções abaixo
+            await firestore.recursiveDelete(personaRef);
 
-        return { success: true };
-    } catch (error) {
-        console.error("deletePersona error:", error);
-        throw new HttpsError("internal", "Erro ao excluir o personagem.");
-    }
-});
+            return { success: true };
+        } catch (error) {
+            console.error("deletePersona error:", error);
+            throw new HttpsError("internal", "Erro ao excluir o personagem.");
+        }
+    });
 
 // ─── deleteConversation ───────────────────────────────────────────────────────
 // Apaga uma conversa específica e TUDO abaixo dela:
@@ -69,32 +73,34 @@ export const deletePersona = onCall(async (request) => {
 //
 // Parâmetros esperados no data: { personaId: string, convId: string }
 
-export const deleteConversation = onCall(async (request) => {
-    const uid = assertAuth(request);
+export const deleteConversation = onCall(
+    { region: "southamerica-east1" },
+    async (request) => {
+        const uid = assertAuth(request);
 
-    const { personaId, convId } = request.data as {
-        personaId?: string;
-        convId?: string;
-    };
+        const { personaId, convId } = request.data as {
+            personaId?: string;
+            convId?: string;
+        };
 
-    if (!personaId || typeof personaId !== "string") {
-        throw new HttpsError("invalid-argument", "O campo 'personaId' é obrigatório.");
-    }
-    if (!convId || typeof convId !== "string") {
-        throw new HttpsError("invalid-argument", "O campo 'convId' é obrigatório.");
-    }
+        if (!personaId || typeof personaId !== "string") {
+            throw new HttpsError("invalid-argument", "O campo 'personaId' é obrigatório.");
+        }
+        if (!convId || typeof convId !== "string") {
+            throw new HttpsError("invalid-argument", "O campo 'convId' é obrigatório.");
+        }
 
-    try {
-        const firestore = admin.firestore();
-        const convRef = firestore.doc(
-            `users/${uid}/personas/${personaId}/conversations/${convId}`
-        );
+        try {
+            const firestore = admin.firestore();
+            const convRef = firestore.doc(
+                `users/${uid}/personas/${personaId}/conversations/${convId}`
+            );
 
-        await firestore.recursiveDelete(convRef);
+            await firestore.recursiveDelete(convRef);
 
-        return { success: true };
-    } catch (error) {
-        console.error("deleteConversation error:", error);
-        throw new HttpsError("internal", "Erro ao excluir a conversa.");
-    }
-});
+            return { success: true };
+        } catch (error) {
+            console.error("deleteConversation error:", error);
+            throw new HttpsError("internal", "Erro ao excluir a conversa.");
+        }
+    });
