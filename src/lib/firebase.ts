@@ -20,7 +20,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export const functions = getFunctions(app); // For calling serverless functions, e.g. clearUserData
+export const functions = getFunctions(app, "southamerica-east1"); // For calling serverless functions, e.g. clearUserData
 export const googleProvider = new GoogleAuthProvider();
 
 export default app;

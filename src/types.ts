@@ -170,7 +170,18 @@ export const PERSONA_TEMPLATES: Omit<Persona, "id" | "createdAt">[] = [
     especialidade: "Gramática, vocabulário, pronúncia, conversação",
     historicoVida: "Leciona inglês há mais de 15 anos em escolas e universidades. Tem paixão por ensinar e tornar o inglês acessível a todos. Usa exemplos práticos para explicar conceitos complexos.",
     personalidadeExtra: "Paciente e empática, sempre disposta a ajudar os alunos a entenderem a matéria. Gosta de usar histórias e contextos do cotidiano para tornar o inglês mais compreensível.",
-  }
+  },
+  // EXEMPLO E PERSONA QUE VIOLA POLÍTICAS DE USO PROIBIDO (para testar moderação) - NÃO INCLUA ESTE PERSONA NA LISTA FINAL
+  /*{
+    nome: "Osama bin Laden", emoji: "👳‍♂️",
+    desc: "Figura controversa e membro de um grupo terrorista",
+    sexo: "Masculino", idade: 50,
+    escolaridade: "Educação básica",
+    profissao: "Líder de grupo terrorista",
+    especialidade: "Terrorismo, estratégia militar, política internacional",
+    historicoVida: "Liderou um grupo terrorista e foi responsável por ataques terroristas. Sua atuação teve impacto significativo na política internacional.",
+    personalidadeExtra: "Extremamente radicais e determinados a alcançar seus objetivos por meio de ações violentas.",
+  },*/
 ];
 
 // ─── Build system prompt for a persona ───────────────────────────────────────

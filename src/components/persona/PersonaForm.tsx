@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Persona } from "../../types";
 import { buildSystemPrompt } from "../../types";
+import { moderatePersona } from "../../lib/gemini";
 import PersonaPreview from "./PersonaPreview";
 
 import {
@@ -10,7 +11,8 @@ import {
   ExclamationTriangleIcon,
   ChevronDownIcon,
   ChevronUpIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  NoSymbolIcon,
 } from '@heroicons/react/24/outline'
 
 type FormData = Omit<Persona, "id" | "createdAt">;
@@ -136,6 +138,9 @@ export default function PersonaForm({ displayName, initial, onSave, onBack, isEd
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [activeTab, setActiveTab] = useState<"basico" | "personalidade">("basico");
   const [showPrompt, setShowPrompt] = useState(false);
+  // Moderation state
+  const [moderating, setModerating] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
 
   const set = <K extends keyof FormData>(key: K) =>
     (value: FormData[K] | string) =>
@@ -150,8 +155,22 @@ export default function PersonaForm({ displayName, initial, onSave, onBack, isEd
     return Object.keys(e).length === 0;
   };
 
-  const handleSave = () => {
-    if (validate()) onSave(form);
+  const handleSave = async () => {
+    if (!validate()) return;
+
+    setRejectionReason(null);
+    setModerating(true);
+    try {
+      const fakePersona: Persona = { ...form, id: "preview", createdAt: 0 };
+      const result = await moderatePersona(buildSystemPrompt(fakePersona, displayName));
+      if (!result.approved) {
+        setRejectionReason(result.reason);
+        return;
+      }
+      onSave(form);
+    } finally {
+      setModerating(false);
+    }
   };
 
   const fakePersona: Persona = { ...form, id: "preview", createdAt: 0 };
@@ -306,6 +325,17 @@ export default function PersonaForm({ displayName, initial, onSave, onBack, isEd
           </div>
         )}
 
+        {/* ── Rejection notice ── */}
+        {rejectionReason && (
+          <div className="pf-rejection-box">
+            <span className="pf-rejection-box__icon"><NoSymbolIcon className="size-7" stroke="#e5321d" strokeWidth={3} fill="#eeeeee" /></span>
+            <div>
+              <p className="pf-rejection-box__title">Personagem recusado</p>
+              <p className="pf-rejection-box__reason">{rejectionReason}</p>
+            </div>
+          </div>
+        )}
+
         {/* ── Actions ── */}
         <div className="pf-actions">
           <button type="button" className="pf-btn-back inline-flex" onClick={onBack}>
@@ -313,15 +343,17 @@ export default function PersonaForm({ displayName, initial, onSave, onBack, isEd
           </button>
           <button
             type="button"
-            className={`pf-btn-save ${saving ? "pf-btn-save--loading" : ""}`}
+            className={`pf-btn-save ${(saving || moderating) ? "pf-btn-save--loading" : ""}`}
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || moderating}
           >
-            {saving
-              ? <><span className="pf-spinner" /> Salvando…</>
-              : isEdit ?
-                <><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className="-mt-1!" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10.656V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12.344" /><path d="m9 11 3 3L22 4" /></svg> Salvar alterações</>
-                : <><SparklesIcon className="size-5 mr-1!" fill="gold" /> Criar personagem</>
+            {moderating
+              ? <><span className="pf-spinner" /> Verificando…</>
+              : saving
+                ? <><span className="pf-spinner" /> Salvando…</>
+                : isEdit ?
+                  <><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className="-mt-1!" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10.656V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12.344" /><path d="m9 11 3 3L22 4" /></svg> Salvar alterações</>
+                  : <><SparklesIcon className="size-5 mr-1!" fill="gold" /> Criar personagem</>
             }
           </button>
         </div>

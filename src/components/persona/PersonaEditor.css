@@ -497,3 +497,33 @@
   .pf-row-emoji-name { grid-template-columns: 1fr; }
   .pf-row-2col       { grid-template-columns: 1fr; }
 }
+
+/* ─── Rejection notice ─── */
+.pf-rejection-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(247, 97, 79, 0.07);
+  border: 1px solid rgba(247, 97, 79, 0.35);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 4px;
+  animation: pf-shake 0.35s cubic-bezier(.36,.07,.19,.97);
+}
+
+@keyframes pf-shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+
+.pf-rejection-box__icon  { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.pf-rejection-box__title {
+  font-size: 13px; font-weight: 700;
+  color: #f7614f; margin-bottom: 3px;
+}
+.pf-rejection-box__reason {
+  font-size: 12.5px; color: #f98b7c; line-height: 1.55;
+}

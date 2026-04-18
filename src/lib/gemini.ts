@@ -79,6 +79,59 @@ async function buildUserParts(userText: string, file?: File): Promise<Part[]> {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
+const MODERATION_MODEL = "gemini-2.5-flash";
+
+/**
+ * Moderates a persona before saving.
+ *
+ * Sends the persona's system prompt to Gemini Flash Lite and asks it to check
+ * for violations of the Generative AI Prohibited Use Policy.
+ *
+ * @returns `{ approved: true }` if the persona is acceptable, or
+ *          `{ approved: false, reason: string }` with the violation description.
+ */
+export async function moderatePersona(
+  systemPrompt: string
+): Promise<{ approved: true } | { approved: false; reason: string }> {
+  const genAI = getClient();
+
+  const model = genAI.getGenerativeModel({
+    model: MODERATION_MODEL,
+    // Temperature 0 = deterministic, consistent moderation decisions
+    generationConfig: { temperature: 0, maxOutputTokens: 1000 },
+    // Keep safety settings permissive here so the model can *describe* violations
+    // without itself being blocked by the safety filters.
+    safetySettings: [
+      { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+      { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+      { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+      { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+    ],
+  });
+
+  const prompt = `Abaixo está um modelo de prompt para a criação de um persona de IA. Analise-o quanto à possibilidade de violar a "Política de Uso Proibido da IA Generativa".
+Responda APENAS "NÃO" se não violar nenhuma política. Se violar, responda APENAS com o motivo, em no máximo 200 caracteres, sem introdução nem explicação extra.
+
+Persona:
+"${systemPrompt}"`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const raw = result.response.text().trim();
+
+    // Any answer that is exactly "NÃO" (case-insensitive) means approved
+    if (/^não$/i.test(raw)) return { approved: true };
+
+    // Otherwise the model returned the violation reason
+    return { approved: false, reason: raw };
+  } catch {
+    // If the moderation call itself fails (network, quota, etc.),
+    // fail open — don't block the user from saving.
+    console.warn("moderatePersona: moderation call failed, allowing save.");
+    return { approved: true };
+  }
+}
+
 /**
  * Sends a message to Gemini and returns the full response text.
  *
