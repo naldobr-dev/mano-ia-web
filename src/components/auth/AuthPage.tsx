@@ -59,8 +59,14 @@ export default function AuthPage() {
 
         <p className="auth-footer">
           Ao continuar, você concorda com os{" "}
-          <a href="#">Termos de Uso</a> e a{" "}
-          <a href="#">Política de Privacidade</a>.
+          <a href="https://mano.ia.br/legal/#terms" target="_blank">
+            Termos de Uso
+          </a>
+          e a{" "}
+          <a href="https://mano.ia.br/legal/#privacy" target="_blank">
+            Política de Privacidade
+          </a>
+          .
         </p>
         <div className="auth-footer">
           © 2026 Mano IA ·

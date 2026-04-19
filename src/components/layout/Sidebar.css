@@ -323,7 +323,7 @@
 
 .conv-row__del {
   position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-  background: rgba(28, 29, 29, 1); border: none; cursor: pointer;
+  background: var(--sidebar-bg); border: none; cursor: pointer;
   font-size: 13px; opacity: 0.7; padding: 3px 5px;
   border-radius: 6px; transition: all 0.15s;
 }
@@ -331,7 +331,7 @@
 
 .conv-row__rename {
   position: absolute; right: 30px; top: 50%; transform: translateY(-50%);
-  background: rgba(28, 29, 29, 1); border: none; cursor: pointer;
+  background: var(--sidebar-bg); border: none; cursor: pointer;
   font-size: 13px; opacity: 0.7; padding: 3px 5px;
   border-radius: 6px; transition: all 0.15s;
 }

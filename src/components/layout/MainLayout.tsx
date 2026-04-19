@@ -17,6 +17,12 @@ import "./MainLayout.css";
 
 import { IconLogo } from '../../icons/IconLogo';
 
+import {
+  FireIcon,
+  LightBulbIcon,
+  UsersIcon
+} from '@heroicons/react/24/outline';
+
 // ── Firebase Functions client ─────────────────────────────────────────────────
 const fnDeletePersona = httpsCallable<{ personaId: string }, { success: boolean }>(functions, "deletePersona");
 const fnDeleteConversation = httpsCallable<{ personaId: string; convId: string }, { success: boolean }>(functions, "deleteConversation");
@@ -257,21 +263,23 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
                 Ver personagens
               </div>
             </div>
-
-            <div className="start-page_info">
-              * O Mano IA é um chatbot de IA que pode conversar sobre diversos assuntos, ajudar com tarefas, criar histórias e muito mais.
-              <br />
-              * Ele é baseado na tecnologia Gemini da Google, especializada em conversação.
-              <br />
-              * Para melhores resultados, tente enviar mensagens claras e específicas.
-              <br />
-              * Você pode criar múltiplos personagens com personalidades diferentes para diversas situações.
-              <br />
-              * O Mano IA é gratuito para usar, mas tem limites de uso diário para garantir a qualidade do serviço. Se você atingir o limite, pode esperar até o próximo dia ou entrar em contato para opções de uso estendido.
+            <div className="float-left" style={{ margin: '1em 1em 0' }}>
+              <p className="start-page__tips">
+                <FireIcon className="size-5.5 inline mr-1.5!" style={{ alignSelf: 'anchor-center' }} fill="#cb2929" stroke="#f7c83b" strokeWidth={1} />
+                Converse sobre diversos assuntos, tenha ajuda com tarefas, crie histórias e muito mais.
+              </p>
+              <p className="start-page__tips">
+                <LightBulbIcon className="size-5 inline mr-1.5!" style={{ alignSelf: 'anchor-center' }} stroke="yellow" />
+                Para melhores resultados, tente enviar mensagens claras e específicas.
+              </p>
+              <p className="start-page__tips">
+                <UsersIcon className="size-5 inline mr-1.5!" style={{ alignSelf: 'anchor-center' }} stroke="dodgerblue" />
+                Crie personagens com personalidades diferentes para diversas situações.
+              </p>
             </div>
 
             <p className="start-page__footer">
-              Ao enviar mensagens para o Mano IA, um chatbot de IA, você aceita nossos Termos e reconhece nossa Política de Privacidade. Confira as Preferências de cookies.
+              Ao enviar mensagens para o Mano IA, um chatbot de IA, você aceita nossos <a href="https://mano.ia.br/legal/#terms" className="underline" target="_blank">Termos</a> e reconhece nossa <a href="https://mano.ia.br/legal/#privacy" className="underline" target="_blank">Política de Privacidade</a>.
             </p>
           </div>
         </>
