@@ -62,7 +62,7 @@ export default function AuthPage() {
           <a href="https://mano.ia.br/legal/#terms" target="_blank">
             Termos de Uso
           </a>
-          e a{" "}
+          {" "}e a{" "}
           <a href="https://mano.ia.br/legal/#privacy" target="_blank">
             Política de Privacidade
           </a>
