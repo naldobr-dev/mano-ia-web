@@ -61,8 +61,8 @@ export default function AuthPage() {
           Ao continuar, você concorda com os{" "}
           <a href="https://mano.ia.br/legal/#terms" target="_blank">
             Termos de Uso
-          </a>
-          {" "}e a{" "}
+          </a>{" "}
+          e a{" "}
           <a href="https://mano.ia.br/legal/#privacy" target="_blank">
             Política de Privacidade
           </a>
