@@ -144,6 +144,8 @@ export default function ChatArea({ persona, conversation, onSend, onNewConversat
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [isFocused, setIsFocused] = useState(false);
+
   const audio = useAudioRecorder();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const messages: Message[] = conversation?.messages ?? [];
@@ -255,7 +257,9 @@ export default function ChatArea({ persona, conversation, onSend, onNewConversat
         <div className="chat-header__info">
           <p className="chat-header__name">{persona.nome}</p>
           <p className="chat-header__status">{isTyping ? "digitando..."
-            : <><span style={{ color: 'var(--text-primary)', fontStyle: 'italic', marginRight: '0.5rem', opacity: 0.7 }}>{persona.desc}</span> ● online</>}</p>
+            : <><span className="chat-header__status-description" title={persona.desc}>
+              {persona.desc}
+            </span> ● online</>}</p>
         </div>
         <button className="chat-header__btn" onClick={onNewConversation} title="Nova conversa">✦</button>
       </div>
@@ -410,6 +414,8 @@ export default function ChatArea({ persona, conversation, onSend, onNewConversat
               value={input}
               onChange={e => { setInput(e.target.value); autoResize(); }}
               onKeyDown={handleKey}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               placeholder={pendingFile ? "Adicione uma mensagem (opcional)…" : `Mensagem para ${persona.nome}…`}
               rows={1}
               className="chat-textarea"
@@ -435,7 +441,7 @@ export default function ChatArea({ persona, conversation, onSend, onNewConversat
           </div>
         )}
 
-        {audio.state === "idle" && (
+        {audio.state === "idle" && isFocused && (
           <p className="chat-input-hint">Enter para enviar · Shift+Enter para nova linha</p>
         )}
       </div>

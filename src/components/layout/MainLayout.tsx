@@ -73,7 +73,8 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
 
   // ── Load messages when active conversation changes ────────────────────────
   useEffect(() => {
-    if (!user || !activePersonaId || !activeConvId[activePersonaId]) { setMessages([]); return; }
+    //if (!user || !activePersonaId || !activeConvId[activePersonaId]) { setMessages([]); return; }
+    if (!user || !activePersonaId || !activeConvId[activePersonaId]) return;
     loadMessages(user.uid, activePersonaId, activeConvId[activePersonaId])
       .then(setMessages)
       .catch(() => setMessages([]));
@@ -279,7 +280,7 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
             </div>
 
             <p className="start-page__footer">
-              Ao enviar mensagens para o Mano IA, um chatbot de IA, você aceita nossos <a href="https://mano.ia.br/legal/#terms" className="underline" target="_blank">Termos</a> e reconhece nossa <a href="https://mano.ia.br/legal/#privacy" className="underline" target="_blank">Política de Privacidade</a>.
+              O Mano IA pode cometer erros ou gerar respostas imprecisas. Sempre consulte um profissional qualificado para aconselhamento médico, jurídico ou financeiro.
             </p>
           </div>
         </>

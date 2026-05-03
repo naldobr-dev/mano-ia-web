@@ -17,6 +17,7 @@ function getClient(): GoogleGenerativeAI {
 
 //const MODEL_NAME = "gemini-2.5-flash";
 const MODEL_NAME = "gemini-3.1-flash-lite-preview";
+const MODERATION_MODEL = "gemini-2.5-flash-lite";
 
 const SAFETY_SETTINGS = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
@@ -79,8 +80,6 @@ async function buildUserParts(userText: string, file?: File): Promise<Part[]> {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
-const MODERATION_MODEL = "gemini-2.5-flash";
-
 /**
  * Moderates a persona before saving.
  *
@@ -129,6 +128,91 @@ Persona:
     // fail open — don't block the user from saving.
     console.warn("moderatePersona: moderation call failed, allowing save.");
     return { approved: true };
+  }
+}
+
+/**
+ * Gera um personagem de IA a partir de um nome dado pelo usuário
+ * 
+ * @param name O nome do personagem a ser criado
+ * @returns Um JSON com os dados do novo personagem recebido pela API do Gemini
+ * 
+ */
+export async function generatePersona(name: string): Promise<{ systemPrompt: string; exampleDialog: { user: string; model: string }[] } | null> {
+  const genAI = getClient();
+
+  const model = genAI.getGenerativeModel({
+    model: MODERATION_MODEL,
+    generationConfig: {
+      temperature: 0.9,
+      responseMimeType: "application/json",
+    },
+    safetySettings: SAFETY_SETTINGS,
+  });
+
+  const prompt = `Crie um personagem sobre "${name}". Se você identificar que ele é um personagem conhecido, use as informações reais sobre ele. Retorne APENAS um JSON válido, sem explicações, sem markdown, sem crases, sem texto adicional, preenchendo as seguintes informações do personagem:
+
+nome -> O nome do personagem
+emoji -> Um emoji que represente bem esse personagem
+desc -> Uma descrição curta do peronagem
+sexo -> Sexo do personagem (masculino, feminino, não-binário)
+idade -> Possível idade do personagem
+escolaridade -> Uma escolaridade para o personagem
+profissao -> A profissão do personagem
+especialidade -> No quê o personagem é especialista
+historicoVida -> Uma breve história do personagem (max. 500 caracteres)
+personalidadeExtra -> Personalidades e características extras do personagem (como ele se comunica, se tem humor, se é formal ou casual, se tem expressões favoritas...) (max. 500 caracteres)
+objetivo -> O que esse personagem quer alcançar na conversa
+regras -> Lista de comportamentos obrigatórios ou proibidos
+estiloComunicacao -> formal, casual, sarcástico, motivador, técnico
+modoPensamento-> analítico, criativo, crítico, didático, provocador
+limitacoes -> o que ele NÃO faz ou NÃO SABE
+maneirismos -> bordões ou estilo repetitivo de fala
+tipoInteracao -> passivo | ativo | desafiador
+
+Exemplo:
+{
+  "nome": "Prof. Matheus",
+  "emoji": "👨‍🏫",
+  "desc": "Professor que simplifica matemática ao extremo usando lógica e analogias do dia a dia",
+  "sexo": "Masculino",
+  "idade": 40,
+  "escolaridade": "Doutorado em Matemática",
+  "profissao": "Professor de Matemática",
+  "especialidade": "Explicar matemática de forma simples e intuitiva",
+  "historicoVida": "Depois de anos ensinando alunos com dificuldade, percebeu que o problema não era a matemática, mas a forma como ela era explicada. Desde então, desenvolveu um método baseado em simplificação extrema e analogias do cotidiano.",
+  "personalidadeExtra": "Calmo, direto e extremamente didático. Odeia complicação desnecessária e sempre tenta reduzir tudo ao mais simples possível. Fala como alguém explicando para um amigo.",
+  "objetivo": "Fazer o usuário entender qualquer conceito matemático da forma mais simples possível, sem decorar fórmulas",
+  "regras": [
+    "Sempre explicar com analogias simples do cotidiano",
+    "Evitar linguagem técnica sempre que possível",
+    "Quebrar o raciocínio em passos curtos",
+    "Confirmar se o usuário entendeu antes de avançar"
+  ],
+  "estiloComunicacao": "casual e didático",
+  "modoPensamento": "simplificador",
+  "limitacoes": [
+    "Não usa explicações longas",
+    "Não apresenta fórmulas sem contexto",
+    "Não assume que o usuário sabe o básico"
+  ],
+  "maneirismos": [
+    "“Vamos simplificar isso:”",
+    "“Pensa assim:”",
+    "“Matemática é só lógica disfarçada.”"
+  ],
+  "tipoInteracao": "ativo"
+}`;
+
+  const result = await model.generateContent(prompt);
+  const text = result.response.text();
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    console.warn(`Falha ao criar persona: resposta do modelo não é um JSON válido. Resposta recebida: ${text}`);
+
+    return null;
   }
 }
 

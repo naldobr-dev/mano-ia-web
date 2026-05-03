@@ -204,6 +204,10 @@
   position: relative;
   border: 1px solid transparent;
   transition: all 0.18s;
+  /* impede seleção com mouse e toque */
+  user-select: none; -webkit-user-select: none; -ms-user-select: none;
+  /* Context menu off - iOS Safari */
+  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
 }
 .persona-row:hover { background: rgba(255,255,255,0.04); }
 .persona-row--active {
@@ -284,6 +288,10 @@
   padding: 10px 12px; border-radius: 13px; cursor: pointer;
   position: relative; border: 1px solid transparent;
   transition: all 0.15s;
+  /* impede seleção com mouse e toque */
+  user-select: none; -webkit-user-select: none; -ms-user-select: none;
+  /* Context menu off - iOS Safari */
+  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
 }
 .conv-row:hover    { background: rgba(255,255,255,0.04); }
 .conv-row--active  {

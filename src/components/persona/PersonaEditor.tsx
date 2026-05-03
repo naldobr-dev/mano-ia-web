@@ -28,6 +28,8 @@ export default function PersonaEditor({ displayName, mode, editData, onClose, on
     sexo: "Masculino", idade: 25,
     escolaridade: "", profissao: "",
     especialidade: "", historicoVida: "", personalidadeExtra: "",
+    objetivo: "", regras: [], estiloComunicacao: "", modoPensamento: "",
+    limitacoes: [], maneirismos: [], tipoInteracao: ""
   };
 
   const [step, setStep] = useState<Step>(mode === "edit" ? "form" : "template");

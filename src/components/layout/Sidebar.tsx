@@ -67,7 +67,11 @@ function PersonaRow({
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className={`persona-row ${active ? "persona-row--active" : ""}`} onClick={onClick}>
+    <div
+      className={`persona-row ${active ? "persona-row--active" : ""}`}
+      onClick={onClick}
+      onContextMenu={(e) => e.preventDefault()}
+    >
       <Avatar emoji={persona.emoji} active={active} />
 
       <div className="persona-row__info">
@@ -145,6 +149,7 @@ function ConvRow({
       onClick={onSelect}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
+      onContextMenu={(e) => e.preventDefault()}
     >
       <div className="conv-row__icon"><ChatBubbleLeftIcon className="size-5" /></div>
       <div className="conv-row__info">
