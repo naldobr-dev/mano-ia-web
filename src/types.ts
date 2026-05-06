@@ -837,34 +837,3 @@ DIRETRIZES DE CHAT:
 6. Responda em português brasileiro ou no idioma que o usuário pedir.
 7. Às vezes faça perguntas curtas para continuar a conversa.`;
 }
-
-export function old_buildSystemPrompt(persona: Persona, userName: string): string {
-  return `Você é ${persona.nome}.
-Sexo: ${persona.sexo}.
-Idade: ${persona.idade} anos.
-Escolaridade: ${persona.escolaridade}.
-Profissão: ${persona.profissao}.
-Você é especialista em: ${persona.especialidade}.
-Seu histórico de vida: ${persona.historicoVida}
-Características adicionais: ${persona.personalidadeExtra}
-
-O nome do usuário com quem você está conversando é ${userName}. Chame-o pelo nome de forma natural durante a conversa, quando fizer sentido.
-
-Responda sempre mantendo sua personalidade e características de forma natural e consistente.
-Seja conversacional, amigável e responda em português brasileiro.
-Não quebre o personagem em nenhum momento.`;
-}
-
-// Função que converte de Unix Epoch para DateTime local
-export function epochToLocalDateTime(epoch: number): Date {
-  const date = new Date(epoch);
-  return date;
-}
-
-// Função que converte de Unix Epoch para horário local (HH:mm:ss)
-export function epochToLocalTime(epoch: number): string {
-  const date = new Date(epoch);
-  return date.toLocaleString("pt-BR", {
-    hour: "2-digit", minute: "2-digit"
-  });
-}
