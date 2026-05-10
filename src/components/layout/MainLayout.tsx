@@ -13,6 +13,13 @@ import {
   subscribeConversations,
 } from "../../lib/firestore";
 import { sendMessage as geminiSend } from "../../lib/gemini";
+import {
+  logMessageSent,
+  logChatError,
+  logConversationDeleted,
+  logPersonaDeleted,
+  logConversationRenamed,
+} from "../../lib/analytics";
 import "./MainLayout.css";
 
 import { IconLogo } from '../../icons/IconLogo';
@@ -111,18 +118,40 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
   // ── Delete conversation ───────────────────────────────────────────────────
   const handleDeleteConversation = useCallback(async (personaId: string, convId: string) => {
     if (!user) return;
+
+    const conv = convMetas[personaId]?.find(c => c.id === convId);
+    const msgCount = activeConvId[personaId] === convId ? messages.length : 0;
+
+    await logConversationDeleted({
+      userId: user?.uid ?? "",
+      personaId,
+      conversationId: convId,
+      conversationTitle: conv?.title ?? "Sem título",
+      messageCount: msgCount,
+    });
+
     await fnDeleteConversation({ personaId, convId });
     if (activeConvId[personaId] === convId) {
       setActiveConvId(prev => ({ ...prev, [personaId]: "" }));
       setMessages([]);
     }
-  }, [user, activeConvId]);
+  }, [user, activeConvId, convMetas, messages.length]);
 
   // ── Rename conversation ───────────────────────────────────────────────────
   const handleRenameConversation = useCallback(async (personaId: string, convId: string, newTitle: string) => {
     if (!user) return;
     await updateConversationMeta(user.uid, personaId, convId, { title: newTitle });
-  }, [user]);
+
+    // Registrar evento de renomeação no Analytics
+    const conv = convMetas[personaId]?.find(c => c.id === convId);
+    await logConversationRenamed({
+      userId: user.uid,
+      personaId,
+      conversationId: convId,
+      oldTitle: conv?.title ?? "Sem título",
+      newTitle,
+    });
+  }, [user, convMetas]);
 
   // ── Send message ──────────────────────────────────────────────────────────
   const handleSend = useCallback(async (text: string, file?: File) => {
@@ -154,6 +183,27 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
     }
 
     setMessages(prev => [...prev, userMsg]);
+
+    const contentType = file
+      ? file.type.startsWith("image/") ? "image"
+        : file.type.startsWith("audio/") ? "audio"
+          : file.name.endsWith(".pdf") ? "pdf"
+            : "file"
+      : "text";
+
+    // Não registra se for do tipo "text"
+    if (contentType !== "text") {
+      await logMessageSent({
+        userId: user?.uid ?? "",
+        personaId: activePersonaId,
+        conversationId: convId,
+        contentType,
+        textLength: text.length,
+        fileSize: file?.size ?? 0,
+        fileExtension: file?.name.split(".").pop() ?? "",
+      });
+    }
+
     setIsTyping(true);
 
     await saveMessage(user.uid, activePersonaId, convId, userMsg);
@@ -178,6 +228,20 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
         lastMsg: aiText.slice(0, 60), lastTime: epochToLocalTime(aiMsg.createdAt),
       });
     } catch (err) {
+      const error = err as Error & { code?: string };
+      await logChatError({
+        userId: user?.uid ?? "",
+        personaId: activePersonaId,
+        conversationId: convId,
+        errorMessage: error.message ?? "Erro desconhecido",
+        errorCode: error.code,
+        modelName: "gemini-3.1-flash-lite-preview", // mova para constante
+        recentMessages: messages.slice(-5).map(m => ({
+          role: m.role,
+          text: m.text.slice(0, 500), // limita tamanho
+        })),
+      });
+
       console.error("Gemini error:", err);
       const errMsg: Message = {
         id: uid(), role: "assistant",
@@ -192,6 +256,17 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
 
   // ── Delete persona ────────────────────────────────────────────────────────
   const handleDeletePersona = async (id: string) => {
+    const persona = personas.find(p => p.id === id);
+    const convCount = convMetas[id]?.length ?? 0;
+
+    await logPersonaDeleted({
+      userId: user?.uid ?? "",
+      personaId: id,
+      personaName: persona?.nome ?? "",
+      personaEmoji: persona?.emoji ?? "",
+      conversationCount: convCount,
+    });
+
     await fnDeletePersona({ personaId: id });
     onUpdatePersonas(personas.filter(p => p.id !== id));
     if (activePersonaId === id) {

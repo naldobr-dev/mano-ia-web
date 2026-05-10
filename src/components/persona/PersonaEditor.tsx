@@ -3,6 +3,8 @@ import type { Persona } from "../../types";
 import { PERSONA_TEMPLATES } from "../../types";
 import TemplatePicker from "./TemplatePicker";
 import PersonaForm from "./PersonaForm";
+import { logPersonaCreated } from "../../lib/analytics";
+import { useAuth } from "../../hooks/useAuth";
 import "./PersonaEditor.css";
 // PersonaPreview and PersonaForm styles are bundled in PersonaEditor.css
 
@@ -39,12 +41,21 @@ export default function PersonaEditor({ displayName, mode, editData, onClose, on
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  const { user } = useAuth();
+
+  const [formWasTemplate, setFormWasTemplate] = useState(false);
+  const [formWasGenerated, setFormWasGenerated] = useState(false);
+
   const handleSelectTemplate = (t: typeof PERSONA_TEMPLATES[number]) => {
+    setFormWasTemplate(true);
+    setFormWasGenerated(false);
     setFormData({ ...t });
     setStep("form");
   };
 
   const handleFromScratch = () => {
+    setFormWasTemplate(false);
+    setFormWasGenerated(false);
     setFormData({ ...emptyForm });
     setStep("form");
   };
@@ -53,6 +64,20 @@ export default function PersonaEditor({ displayName, mode, editData, onClose, on
     setSaving(true);
     try {
       await onSave(data);
+
+      // Log de criação (apenas no modo "new" — edição não conta)
+      if (mode === "new") {
+        const creationMethod = step === "form" && formData.nome !== ""
+          ? (formWasGenerated ? "generated" : formWasTemplate ? "template" : "scratch")
+          : "scratch";
+        // Simples: registre o método com base em como chegou ao form
+        await logPersonaCreated({
+          userId: user?.uid ?? "",
+          personaId: crypto.randomUUID(), // será sobrescrito pelo ID real
+          personaName: data.nome,
+          creationMethod,
+        });
+      }
       setSaved(true);
       setTimeout(onClose, 900);
     } finally {
@@ -121,6 +146,7 @@ export default function PersonaEditor({ displayName, mode, editData, onClose, on
               onBack={() => mode === "new" ? setStep("template") : onClose()}
               isEdit={mode === "edit"}
               saving={saving}
+              onGenerated={() => setFormWasGenerated(true)} // Novo callback para marcar que o form foi gerado
             />
           )}
         </div>

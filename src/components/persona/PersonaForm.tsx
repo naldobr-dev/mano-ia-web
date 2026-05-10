@@ -3,6 +3,7 @@ import type { Persona } from "../../types";
 import { buildSystemPrompt } from "../../types";
 import { moderatePersona, generatePersona } from "../../lib/gemini";
 import PersonaPreview from "./PersonaPreview";
+import { useAuth } from "../../hooks/useAuth";
 // ─── Default empty form ───────────────────────────────────────────────────────
 import { EMPTY_FORM } from "./formDefaults";
 
@@ -26,6 +27,7 @@ interface Props {
   onBack: () => void;
   isEdit: boolean;
   saving: boolean;
+  onGenerated: () => void; // Novo callback para indicar que o form foi gerado a partir do nome
 }
 
 const EMOJI_LIST = [
@@ -33,7 +35,7 @@ const EMOJI_LIST = [
   "👨‍🍳", "👩‍🍳", "🎨", "🎭", "🎬", "📚", "🔬", "⚖️", "🎸", "🌟", "🦁",
   "🐉", "🦊", "🧙", "🕵️", "🧑‍🚀", "🏋️", "🧘", "💞", "🎤", "🎯", "🤘",
   "🤡", "👽", "🔥", "🤠", "🥸", "👻", "💀", "🧠", "🎅", "👸", "🤴",
-  "👮", "🥷", "🧑‍🎓", "👨‍🔧", "🧑‍💼", "🧑‍🚒", "🦹", "🦸", "🦸‍♀️", "🧛",
+  "👮", "🥷", "🧑‍🎓", "👨‍🔧", "🧑‍💼", "🧑‍🚒", "🦹", "🦸", "🦸‍♀️", "🧛", "🌵",
   "⚽", "✈️", "🎮", "🕹️", "🌈"
 ];
 
@@ -217,7 +219,7 @@ function EmojiPicker({ value, onChange }: { value: string; onChange: (e: string)
 
 type Tab = "basico" | "personalidade" | "comportamento";
 
-export default function PersonaForm({ displayName, initial, onSave, onBack, isEdit, saving }: Props) {
+export default function PersonaForm({ displayName, initial, onSave, onBack, isEdit, saving, onGenerated }: Props) {
   const [form, setForm] = useState<FormData>({ ...EMPTY_FORM, ...initial });
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [activeTab, setActiveTab] = useState<Tab>("basico");
@@ -228,6 +230,8 @@ export default function PersonaForm({ displayName, initial, onSave, onBack, isEd
 
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+
+  const { user } = useAuth();
 
   const set = <K extends keyof FormData>(key: K) =>
     (value: FormData[K] | string) =>
@@ -249,7 +253,7 @@ export default function PersonaForm({ displayName, initial, onSave, onBack, isEd
     setModerating(true);
     try {
       const fakePersona: Persona = { ...form, id: "preview", createdAt: 0 };
-      const result = await moderatePersona(buildSystemPrompt(fakePersona, displayName));
+      const result = await moderatePersona(buildSystemPrompt(fakePersona, displayName), user?.uid ?? "", form.nome);
       if (!result.approved) {
         setRejectionReason(result.reason);
         return;
@@ -268,11 +272,12 @@ export default function PersonaForm({ displayName, initial, onSave, onBack, isEd
     setGenerateLoading(true);
 
     try {
-      const result = await generatePersona(form.nome.trim());
+      const result = await generatePersona(form.nome.trim(), user?.uid ?? "");
 
       if (result) {
         setForm(f => ({ ...f, ...result }));
         setActiveTab("basico");
+        onGenerated(); // Indica que o form foi gerado a partir do nome
       } else {
         setGenerateError("Não foi possível gerar a persona.");
       }

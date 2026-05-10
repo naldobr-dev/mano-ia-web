@@ -837,3 +837,17 @@ DIRETRIZES DE CHAT:
 6. Responda em português brasileiro ou no idioma que o usuário pedir.
 7. Às vezes faça perguntas curtas para continuar a conversa.`;
 }
+
+// Função que converte de Unix Epoch para DateTime local
+export function epochToLocalDateTime(epoch: number): Date {
+  const date = new Date(epoch);
+  return date;
+}
+
+// Função que converte de Unix Epoch para horário local (HH:mm:ss)
+export function epochToLocalTime(epoch: number): string {
+  const date = new Date(epoch);
+  return date.toLocaleString("pt-BR", {
+    hour: "2-digit", minute: "2-digit"
+  });
+}

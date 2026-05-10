@@ -7,6 +7,11 @@ import {
 } from "@google/generative-ai";
 import type { Message } from "../types";
 
+import {
+  logPersonaRejected,
+  logPersonaGenerated,
+} from "./analytics";
+
 // ── Client (singleton) ────────────────────────────────────────────────────────
 
 function getClient(): GoogleGenerativeAI {
@@ -90,7 +95,9 @@ async function buildUserParts(userText: string, file?: File): Promise<Part[]> {
  *          `{ approved: false, reason: string }` with the violation description.
  */
 export async function moderatePersona(
-  systemPrompt: string
+  systemPrompt: string,
+  userId: string,
+  personaName: string
 ): Promise<{ approved: true } | { approved: false; reason: string }> {
   const genAI = getClient();
 
@@ -121,6 +128,13 @@ Persona:
     // Any answer that is exactly "NÃO" (case-insensitive) means approved
     if (/^não$/i.test(raw)) return { approved: true };
 
+    // Otherwise, log the rejection reason and return it to the caller
+    await logPersonaRejected({
+      userId,
+      personaName,
+      reason: raw,
+      systemPrompt,
+    });
     // Otherwise the model returned the violation reason
     return { approved: false, reason: raw };
   } catch {
@@ -138,7 +152,10 @@ Persona:
  * @returns Um JSON com os dados do novo personagem recebido pela API do Gemini
  * 
  */
-export async function generatePersona(name: string): Promise<{ systemPrompt: string; exampleDialog: { user: string; model: string }[] } | null> {
+export async function generatePersona(name: string, userId: string): Promise<{
+  systemPrompt: string;
+  exampleDialog: { user: string; model: string }[]
+} | null> {
   const genAI = getClient();
 
   const model = genAI.getGenerativeModel({
@@ -208,10 +225,22 @@ Exemplo:
   const text = result.response.text();
 
   try {
-    return JSON.parse(text);
+    const parsed = JSON.parse(text);
+
+    // Log successful generation for analytics, including the input name and user ID for correlation. 
+    // We can analyze this later to see what kinds of names lead to successful or failed generations.
+    await logPersonaGenerated({ userId, inputText: name, success: true });
+
+    // If the response is valid JSON, return it. The UI can then use this to pre-fill the persona creation form, 
+    // allowing the user to edit and customize further before saving.
+    return parsed;
   } catch {
     console.warn(`Falha ao criar persona: resposta do modelo não é um JSON válido. Resposta recebida: ${text}`);
 
+    // Log the failure for analytics to understand what went wrong. This can help us improve the prompt or handle edge cases better.
+    await logPersonaGenerated({ userId, inputText: name, success: false });
+
+    // Return null to indicate failure to generate a valid persona. The UI can handle this case and show an appropriate message to the user.
     return null;
   }
 }
