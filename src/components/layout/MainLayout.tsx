@@ -341,15 +341,19 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
             </div>
             <div className="float-left" style={{ margin: '1em 1em 0' }}>
               <p className="start-page__tips">
-                <FireIcon className="size-5.5 inline mr-1.5!" style={{ alignSelf: 'anchor-center' }} fill="#cb2929" stroke="#f7c83b" strokeWidth={1} />
+                <FireIcon className="size-5.5 inline mr-1.5!" style={{ alignSelf: 'anchor-center', minWidth: '1.25em' }} fill="#cb2929" stroke="#f7c83b" strokeWidth={1} />
                 Converse sobre diversos assuntos, tenha ajuda com tarefas, crie histórias e muito mais.
               </p>
               <p className="start-page__tips">
-                <LightBulbIcon className="size-5 inline mr-1.5!" style={{ alignSelf: 'anchor-center' }} stroke="yellow" />
+                <LightBulbIcon className="size-5 inline mr-1.5!" style={{ alignSelf: 'anchor-center', minWidth: '1.25em' }} stroke="yellow" />
                 Para melhores resultados, tente enviar mensagens claras e específicas.
               </p>
+              <p className="start-page__tips ismobile">
+                <LightBulbIcon className="size-5 inline mr-1.5!" style={{ alignSelf: 'anchor-center', minWidth: '1.25em' }} stroke="#47e508" />
+                Aperte por 3 segundos um personagem ou conversa para ver opções de edição e exclusão.
+              </p>
               <p className="start-page__tips">
-                <UsersIcon className="size-5 inline mr-1.5!" style={{ alignSelf: 'anchor-center' }} stroke="dodgerblue" />
+                <UsersIcon className="size-5 inline mr-1.5!" style={{ alignSelf: 'anchor-center', minWidth: '1.25em' }} stroke="dodgerblue" />
                 Crie personagens com personalidades diferentes para diversas situações.
               </p>
             </div>

@@ -113,6 +113,10 @@
   background-color: var(--bg-primary);
 }
 
+.start-page__tips.ismobile {
+  display: none;
+}
+
 @media (max-width: 680px) {
   .start-page__icon {
     width: calc(var(--spacing) * 24);
@@ -132,5 +136,9 @@
   }
   .start-page_info {
     font-size: 1em;
+  }
+
+  .start-page__tips.ismobile {
+    display: flex;
   }
 }

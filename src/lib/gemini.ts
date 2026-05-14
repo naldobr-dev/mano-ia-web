@@ -21,7 +21,7 @@ function getClient(): GoogleGenerativeAI {
 }
 
 //const MODEL_NAME = "gemini-2.5-flash";
-const MODEL_NAME = "gemini-3.1-flash-lite-preview";
+const MODEL_NAME = "gemini-3.1-flash-lite";
 const MODERATION_MODEL = "gemini-2.5-flash-lite";
 
 const SAFETY_SETTINGS = [
