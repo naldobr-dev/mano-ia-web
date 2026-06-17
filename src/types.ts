@@ -30,6 +30,9 @@ export interface Message {
   createdAt: number;
   attachmentName?: string;
   attachmentType?: "image" | "audio" | "file";
+  // Novos campos para a File API
+  fileUri?: string;
+  fileMimeType?: string;
 }
 
 export interface Conversation {

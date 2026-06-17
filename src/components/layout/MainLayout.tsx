@@ -8,7 +8,7 @@ import { buildSystemPrompt, epochToLocalTime } from "../../types";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "../../lib/firebase";
 import {
-  saveConversation, updateConversationMeta,
+  updateConversationMeta,
   saveMessage, loadMessages,
   subscribeConversations,
 } from "../../lib/firestore";
@@ -33,6 +33,8 @@ import {
 // ── Firebase Functions client ─────────────────────────────────────────────────
 const fnDeletePersona = httpsCallable<{ personaId: string }, { success: boolean }>(functions, "deletePersona");
 const fnDeleteConversation = httpsCallable<{ personaId: string; convId: string }, { success: boolean }>(functions, "deleteConversation");
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fnSaveNewConversation = httpsCallable<{ userId: string; personaId: string; convo: any }, { success: boolean }>(functions, "saveNewConversation");
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2);
@@ -46,9 +48,10 @@ interface Props {
   onOpenSettings: () => void;
   onNewPersona: () => void;
   onEditPersona: (p: Persona) => void;
+  onOpenCredits: () => void;
 }
 
-export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings, onNewPersona, onEditPersona }: Props) {
+export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings, onNewPersona, onEditPersona, onOpenCredits }: Props) {
   const { user } = useAuth();
 
   const [activePersonaId, setActivePersonaId] = useState<string | null>(personas[0]?.id ?? null);
@@ -80,7 +83,6 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
 
   // ── Load messages when active conversation changes ────────────────────────
   useEffect(() => {
-    //if (!user || !activePersonaId || !activeConvId[activePersonaId]) { setMessages([]); return; }
     if (!user || !activePersonaId || !activeConvId[activePersonaId]) return;
     loadMessages(user.uid, activePersonaId, activeConvId[activePersonaId])
       .then(setMessages)
@@ -100,7 +102,6 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
     setMobileSidebarOpen(false);
   }, []);
 
-  // ── New conversation ──────────────────────────────────────────────────────
   const handleNewConversation = useCallback(async () => {
     if (!activePersonaId || !user) return;
     const conv: Omit<Conversation, "messages"> = {
@@ -109,10 +110,13 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
       lastMsg: "", lastTime: nowTime(),
       unread: 0, createdAt: Date.now(),
     };
-    await saveConversation(user.uid, activePersonaId, conv);
+
+    // Chama o backend para criar a conversa e cobrar os créditos (se houver cobrança configurada)
+    await fnSaveNewConversation({ userId: user.uid, personaId: activePersonaId, convo: conv });
+
     setActiveConvId(prev => ({ ...prev, [activePersonaId]: conv.id }));
     setMessages([]);
-    setMobileSidebarOpen(false); // close drawer and go straight to chat
+    setMobileSidebarOpen(false);
   }, [activePersonaId, user]);
 
   // ── Delete conversation ───────────────────────────────────────────────────
@@ -166,7 +170,9 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
         lastMsg: text, lastTime: nowTime(),
         unread: 0, createdAt: Date.now(),
       };
-      await saveConversation(user.uid, activePersonaId, conv);
+
+      await fnSaveNewConversation({ userId: user.uid, personaId: activePersonaId, convo: conv });
+
       convId = conv.id;
       setActiveConvId(prev => ({ ...prev, [activePersonaId]: convId }));
     }
@@ -206,6 +212,7 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
 
     setIsTyping(true);
 
+    // Salva a mensagem inicial do usuário no Firestore (ainda sem a URI)
     await saveMessage(user.uid, activePersonaId, convId, userMsg);
     await updateConversationMeta(user.uid, activePersonaId, convId, {
       lastMsg: (file ? `📎 ${file.name}` : text).slice(0, 60),
@@ -213,39 +220,68 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
     });
 
     try {
-      const aiText = await geminiSend(
+      // Recebe o texto da IA e, se um arquivo foi enviado, recebe a URI e o MimeType gerados
+      const { text: aiText, fileUri, fileMimeType } = await geminiSend(
         buildSystemPrompt(activePersona, user.displayName || "Usuário"),
         messages,
         text,
         file
       );
 
+      // Se a API fez o upload de um arquivo, atualizamos a mensagem do usuário
+      if (fileUri && fileMimeType) {
+        const updatedUserMsg = { ...userMsg, fileUri, fileMimeType };
+
+        // Atualiza no estado local
+        setMessages(prev => prev.map(m =>
+          m.id === userMsg.id ? updatedUserMsg : m
+        ));
+
+        // Atualiza/Sobrescreve a mensagem do usuário no Firestore com a URI embutida
+        await saveMessage(user.uid, activePersonaId, convId, updatedUserMsg);
+      }
+
+      // Cria a mensagem de resposta da IA
       const aiMsg: Message = { id: uid(), role: "assistant", text: aiText, createdAt: Date.now() };
 
+      // Salva a mensagem da IA no estado e no Firestore
       setMessages(prev => [...prev, aiMsg]);
       await saveMessage(user.uid, activePersonaId, convId, aiMsg);
+
       await updateConversationMeta(user.uid, activePersonaId, convId, {
         lastMsg: aiText.slice(0, 60), lastTime: epochToLocalTime(aiMsg.createdAt),
       });
     } catch (err) {
       const error = err as Error & { code?: string };
+
+      if (error.code === "functions/resource-exhausted") {
+        const errMsg: Message = {
+          id: uid(), role: "assistant",
+          text: "Você está sem créditos para continuar a conversa. Espere até amanhã para receber mais créditos grátis, ou *Compre um pacote de créditos*.",
+          createdAt: Date.now(),
+        };
+        setMessages(prev => [...prev, errMsg]);
+        setIsTyping(false);
+        return;
+      }
+
       await logChatError({
         userId: user?.uid ?? "",
         personaId: activePersonaId,
         conversationId: convId,
         errorMessage: error.message ?? "Erro desconhecido",
-        errorCode: error.code,
-        modelName: "gemini-3.1-flash-lite-preview", // mova para constante
+        errorCode: error.code ?? "]no_code]",
+        modelName: import.meta.env.VITE_GEMINI_MODEL_NAME || "[modelo_nao_encontrado]", // Alterado para bater com sua constante atualizada
         recentMessages: messages.slice(-5).map(m => ({
           role: m.role,
-          text: m.text.slice(0, 500), // limita tamanho
+          text: m.text.slice(0, 500),
         })),
       });
 
       console.error("Gemini error:", err);
       const errMsg: Message = {
         id: uid(), role: "assistant",
-        text: "Desculpe, ocorreu um erro ao me conectar. Tente novamente.",
+        text: "Desculpe, ocorreu um erro ao me conectar. Tente novamente.\n - *Seus créditos foram reenbolsados.*",
         createdAt: Date.now(),
       };
       setMessages(prev => [...prev, errMsg]);
@@ -292,6 +328,7 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
     onEditPersona,
     onDeletePersona: handleDeletePersona,
     onOpenSettings,
+    onOpenCredits: onOpenCredits,
   };
 
   return (
@@ -320,6 +357,7 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
           onSend={handleSend}
           onNewConversation={handleNewConversation}
           onOpenSidebar={() => setMobileSidebarOpen(true)}
+          onOpenCredits={onOpenCredits}
           isTyping={isTyping}
         />
       ) : (

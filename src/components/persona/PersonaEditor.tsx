@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Persona } from "../../types";
 import { PERSONA_TEMPLATES } from "../../types";
 import TemplatePicker from "./TemplatePicker";
@@ -42,6 +42,16 @@ export default function PersonaEditor({ displayName, mode, editData, onClose, on
   const [saved, setSaved] = useState(false);
 
   const { user } = useAuth();
+
+  const bodyRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (step === "form") {
+      bodyRef.current?.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }, [step]);
 
   const [formWasTemplate, setFormWasTemplate] = useState(false);
   const [formWasGenerated, setFormWasGenerated] = useState(false);
@@ -131,7 +141,7 @@ export default function PersonaEditor({ displayName, mode, editData, onClose, on
         )}
 
         {/* ── Body ── */}
-        <div className="pe-body">
+        <div className="pe-body" ref={bodyRef}>
           {step === "template" ? (
             <TemplatePicker
               templates={PERSONA_TEMPLATES}

@@ -21,6 +21,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import "./ChatArea.css";
+import { useCreditos } from "../../hooks/useCredits";
 
 // Propriedades dos ícones
 interface IconProps {
@@ -45,6 +46,7 @@ interface Props {
   onNewConversation: () => void;
   onOpenSidebar?: () => void;
   isTyping: boolean;
+  onOpenCredits?: () => void;
 }
 
 const MAX_FILE_MB = 20;
@@ -135,7 +137,7 @@ function FileChip({ file, onRemove }: { file: File; onRemove: () => void }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function ChatArea({ persona, conversation, onSend, onNewConversation, onOpenSidebar, isTyping }: Props) {
+export default function ChatArea({ persona, conversation, onSend, onNewConversation, onOpenSidebar, onOpenCredits, isTyping }: Props) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [fileError, setFileError] = useState("");
@@ -143,6 +145,8 @@ export default function ChatArea({ persona, conversation, onSend, onNewConversat
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { totais: creditosTotais } = useCreditos();
 
   const [isFocused, setIsFocused] = useState(false);
 
@@ -398,50 +402,63 @@ export default function ChatArea({ persona, conversation, onSend, onNewConversat
         )}
 
         {/* ── Normal input ── */}
-        {audio.state === "idle" && (
-          <div className="chat-input-box">
-            {/* Attach */}
-            <button className="chat-input-btn" title="Enviar arquivo" onClick={() => fileInputRef.current?.click()}><PaperClipIcon className="size-6" /></button>
-            <input
-              ref={fileInputRef} type="file" hidden
-              onChange={handleFilePick}
-              accept="image/*,.pdf,.doc,.docx,.txt,.json,.xml,.htm,.html,.csv,.xls,.xlsx,.mp3,.ogg,.wav,.m4a,.webm"
-            />
+        {creditosTotais > 2 ? (
+          audio.state === "idle" && (
+            <div className="chat-input-box">
+              {/* Attach */}
+              <button className="chat-input-btn" title="Enviar arquivo" onClick={() => fileInputRef.current?.click()}><PaperClipIcon className="size-6" /></button>
+              <input
+                ref={fileInputRef} type="file" hidden
+                onChange={handleFilePick}
+                accept="image/*,.pdf,.doc,.docx,.txt,.json,.xml,.htm,.html,.csv,.xls,.xlsx,.mp3,.ogg,.wav,.m4a,.webm"
+              />
 
-            {/* Textarea */}
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={e => { setInput(e.target.value); autoResize(); }}
-              onKeyDown={handleKey}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              placeholder={pendingFile ? "Adicione uma mensagem (opcional)…" : `Mensagem para ${persona.nome}…`}
-              rows={1}
-              className="chat-textarea"
-              disabled={sending}
-            />
+              {/* Textarea */}
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={e => { setInput(e.target.value); autoResize(); }}
+                onKeyDown={handleKey}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                placeholder={pendingFile ? "Adicione uma mensagem (opcional)…" : `Mensagem para ${persona.nome}…`}
+                rows={1}
+                className="chat-textarea"
+                disabled={sending}
+              />
 
-            {/* Mic */}
-            <button
-              className={`chat-input-btn ${(audio.state as RecordState) === "recording" ? "chat-input-btn--recording" : ""}`}
-              title="Gravar áudio"
-              onClick={audio.start}
-            ><MicrophoneIcon className="size-6" /></button>
+              {/* Mic */}
+              <button
+                className={`chat-input-btn ${(audio.state as RecordState) === "recording" ? "chat-input-btn--recording" : ""}`}
+                title="Gravar áudio"
+                onClick={audio.start}
+              ><MicrophoneIcon className="size-6" /></button>
 
-            {/* Send */}
-            <button
-              className={`chat-send-btn ${canSend ? "chat-send-btn--active" : ""}`}
-              onClick={handleSend}
-              disabled={!canSend}
-              title="Enviar"
-            >
-              {sending ? <span className="send-spinner" /> : <PaperAirplaneIcon className="size-6" />}
-            </button>
+              {/* Send */}
+              <button
+                className={`chat-send-btn ${canSend ? "chat-send-btn--active" : ""}`}
+                onClick={handleSend}
+                disabled={!canSend}
+                title="Enviar"
+              >
+                {sending ? <span className="send-spinner" /> : <PaperAirplaneIcon className="size-6" />}
+              </button>
+            </div>
+          )
+        ) : (
+          <div className="align-center p-2! italic text-sm text-gray-400">
+            <p>
+              <span className="text-red-500 mr-2! text-lg">⚠</span>
+              Créditos insuficientes para enviar mensagens. <strong>Espere até amanhã para ganhar mais ou</strong> &nbsp;
+              <button className="text-blue-400 cursor-pointer hover:text-blue-600 hover:underline" onClick={onOpenCredits}>
+                compre créditos
+              </button>
+              .
+            </p>
           </div>
         )}
 
-        {audio.state === "idle" && isFocused && (
+        {creditosTotais > 2 && audio.state === "idle" && isFocused && (
           <p className="chat-input-hint">Enter para enviar · Shift+Enter para nova linha</p>
         )}
       </div>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useCreditos } from "../../hooks/useCredits";
 import { type Persona, type Conversation, epochToLocalTime } from "../../types";
 import "./Sidebar.css";
 
@@ -41,6 +42,7 @@ interface Props {
   onEditPersona: (persona: Persona) => void;
   onDeletePersona: (id: string) => void;
   onOpenSettings: () => void;
+  onOpenCredits: () => void;
 }
 
 // ── Avatar ────────────────────────────────────────────────────────────────────
@@ -198,7 +200,7 @@ export default function Sidebar({
   personas, activePersonaId, convMetas, activeConvId,
   initialPanel = "personas", initialPersonaId,
   onSelectPersona, onSelectConversation, onDeleteConversation, onRenameConversation, onNewConversation,
-  onNewPersona, onEditPersona, onDeletePersona, onOpenSettings,
+  onNewPersona, onEditPersona, onDeletePersona, onOpenSettings, onOpenCredits,
 }: Props) {
   const [panel, setPanel] = useState<Panel>(initialPanel);
   const [search, setSearch] = useState("");
@@ -212,6 +214,7 @@ export default function Sidebar({
   );
   const [animating, setAnimating] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { totais: creditosTotais } = useCreditos();
 
   const ANIM_MS = 260;
 
@@ -285,6 +288,15 @@ export default function Sidebar({
                 <p className="sidebar__count">{personas.length} persona{personas.length !== 1 ? "s" : ""}</p>
               </div>
             </div>
+            {/* Botão de saldo de créditos */}
+            <button className="sidebar__credits-btn" onClick={onOpenCredits} title="Seus créditos">
+              <span className="sidebar__credits-text">
+                💎
+                <strong className={`${creditosTotais > 2 ? 'text-blue-400' : 'text-red-400'}`}>
+                  {creditosTotais}
+                </strong>
+              </span>
+            </button>
             <button className="sidebar__icon-btn" onClick={onOpenSettings} title="Configurações"><AdjustmentsHorizontalIcon className="size-6 opacity-60" /></button>
           </>
         )}
@@ -372,8 +384,22 @@ export default function Sidebar({
           </div>
 
           <div className="sidebar__footer">
-            <button className="sidebar__new-btn flex flex-1 items-center justify-center" onClick={onNewConversation}>
-              <span style={{ fontSize: '18px' }}>✦</span> &nbsp; Nova conversa</button>
+            {creditosTotais > 2 ? (
+              <button className="sidebar__new-btn flex flex-1 items-center justify-center" onClick={onNewConversation}>
+                <span style={{ fontSize: '18px' }}>✦</span> &nbsp; Nova conversa
+              </button>
+            ) :
+              <div className="align-center p-2! italic text-sm text-gray-400">
+                <p>
+                  <span className="text-red-500 mr-2! text-lg">⚠</span>
+                  Créditos insuficientes para iniciar novas conversas. <strong>Espere até amanhã para ganhar mais ou</strong>&nbsp;
+                  <button className="text-blue-400 cursor-pointer hover:text-blue-600 hover:underline" onClick={onOpenCredits}>
+                    compre créditos
+                  </button>
+                  .
+                </p>
+              </div>
+            }
           </div>
         </div>
 

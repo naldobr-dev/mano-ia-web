@@ -9,7 +9,9 @@
     "rootDir": "src",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017"
+    "target": "es2017",
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
   },
   "compileOnSave": true,
   "include": [

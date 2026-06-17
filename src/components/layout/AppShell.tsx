@@ -2,6 +2,7 @@ import { useState } from "react";
 import { usePersonas } from "../../hooks/usePersonas";
 import MainLayout from "./MainLayout";
 import PersonaEditor from "../persona/PersonaEditor";
+import CreditsPanel from "../credits/CreditsPanel"; // Import do painel de créditos
 import SettingsDrawer from "../settings/SettingsDrawer";
 import type { Persona } from "../../types";
 import { auth } from "../../lib/firebase";
@@ -19,6 +20,7 @@ export default function AppShell() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { user, logout } = useAuth();
   const [resendMessage, setResendMessage] = useState("");
+  const [creditsPanelOpen, setCreditsPanelOpen] = useState(false);
 
 
   const handleSave = async (data: Omit<Persona, "id" | "createdAt">) => {
@@ -96,6 +98,7 @@ export default function AppShell() {
             onOpenSettings={() => setSettingsOpen(true)}
             onNewPersona={() => setModal({ mode: "new" })}
             onEditPersona={(p) => setModal({ mode: "edit", persona: p })}
+            onOpenCredits={() => setCreditsPanelOpen(true)}
           />
 
           {modal && (
@@ -105,6 +108,12 @@ export default function AppShell() {
               editData={modal.mode === "edit" ? modal.persona : undefined}
               onClose={() => setModal(null)}
               onSave={handleSave}
+            />
+          )}
+
+          {creditsPanelOpen && (
+            <CreditsPanel
+              onClose={() => setCreditsPanelOpen(false)}
             />
           )}
 

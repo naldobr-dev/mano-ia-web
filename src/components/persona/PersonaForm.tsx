@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Persona } from "../../types";
 import { buildSystemPrompt } from "../../types";
 import { moderatePersona, generatePersona } from "../../lib/gemini";
@@ -16,6 +16,7 @@ import {
   ChevronUpIcon,
   ArrowLeftIcon,
   NoSymbolIcon,
+  LightBulbIcon,
 } from '@heroicons/react/24/outline'
 
 type FormData = Omit<Persona, "id" | "createdAt">;
@@ -233,6 +234,15 @@ export default function PersonaForm({ displayName, initial, onSave, onBack, isEd
 
   const { user } = useAuth();
 
+  const [showNameTip, setShowNameTip] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowNameTip(false);
+    }, 15000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const set = <K extends keyof FormData>(key: K) =>
     (value: FormData[K] | string) =>
       setForm(f => ({ ...f, [key]: value }));
@@ -336,6 +346,14 @@ export default function PersonaForm({ displayName, initial, onSave, onBack, isEd
               </div>
               <div className="pf-field pf-field--grow">
                 <Label text="Nome" required />
+
+                {showNameTip && (
+                  <div className="pf-name-tip opacity-95">
+                    <LightBulbIcon className="inline-block mr-2! w-5 h-5" stroke="yellow" />
+                    Para criar um personagem novo único, escreva o nome ou uma descrição dele no campo Nome e clique em <strong>Gerar personagem</strong>.
+                  </div>
+                )}
+
                 <TextInput
                   value={form.nome}
                   onChange={set("nome")}

@@ -4,6 +4,7 @@ import { PersonasProvider } from "./contexts/PersonasProvider";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import AuthPage from "./components/auth/AuthPage";
 import AppShell from "./components/layout/AppShell";
+import PagamentoConcluido from "./components/credits/PagamentoConcluido";
 
 export default function App() {
   return (
@@ -13,6 +14,8 @@ export default function App() {
           <Routes>
             {/* Public */}
             <Route path="/login" element={<AuthPage />} />
+            <Route path="/payment-success" element={<PagamentoConcluido />} />
+            <Route path="/pagamento-concluido" element={<PagamentoConcluido />} />
 
             {/* Protected */}
             <Route
