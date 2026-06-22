@@ -263,7 +263,7 @@ export default function ChatArea({ persona, conversation, onSend, onNewConversat
           <p className="chat-header__status">{isTyping ? "digitando..."
             : <><span className="chat-header__status-description" title={persona.desc}>
               {persona.desc}
-            </span> ● online</>}</p>
+            </span> <span className="hide-on-mobile">● online</span></>}</p>
         </div>
         <button className="chat-header__btn" onClick={onNewConversation} title="Nova conversa">✦</button>
       </div>
@@ -306,37 +306,60 @@ export default function ChatArea({ persona, conversation, onSend, onNewConversat
                           </div>
                         )}
                         {msg.role === "assistant"
-                          ? <ReactMarkdown
-                            remarkPlugins={[remarkMath]}
-                            rehypePlugins={[rehypeKatex]}
-                            components={{
-                              p: ({ ...props }) => <p className="mb-2 last:mb-0" {...props} />,
-                              ul: ({ ...props }) => <ul className="mb-2 list-disc" {...props} />,
-                              ol: ({ ...props }) => <ol className="mb-2 list-decimal" {...props} />,
-                              li: ({ ...props }) => <li className="mb-1" {...props} />,
-                              strong: ({ ...props }) => <strong className="font-semibold" style={{ color: 'var(--text-primary)' }} {...props} />,
-                              a: ({ ...props }) => <a style={{ color: 'var(--accent-primary)' }} className="hover:underline" {...props} />,
-                              h1: ({ ...props }) => <h1 className="mb-2 text-base font-bold" style={{ fontFamily: 'var(--font-display)' }} {...props} />,
-                              h2: ({ ...props }) => <h2 className="mb-2 text-sm font-bold" style={{ fontFamily: 'var(--font-display)' }} {...props} />,
-                              h3: ({ ...props }) => <h3 className="mb-1 text-sm font-semibold" {...props} />,
-                              code: ({ ...props }) => (
-                                <code
-                                  className="px-1.5 py-0.5 rounded text-xs font-mono"
-                                  style={{ background: 'var(--bg-overlay)', color: '#a5b4fc' }}
-                                  {...props}
-                                />
-                              ),
-                              pre: ({ ...props }) => (
-                                <pre
-                                  className="rounded-xl p-3 overflow-x-auto text-xs font-mono my-2"
-                                  style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)' }}
-                                  {...props}
-                                />
-                              ),
-                            }}
-                          >
-                            {msg.text.replace(/\$\$(.*?)\$\$/gs, "\n$$$1$$\n")}
-                          </ReactMarkdown>
+                          ?
+                          msg.text.startsWith('[ERROR') ?
+                            msg.text.indexOf('NO-CASH') > 0 ?
+                              // MENSAGEM DE CRÉDITOS INSUFICIENTES
+                              <pre style={{ textWrap: 'auto', fontFamily: 'sans-serif', lineHeight: '1.5em', opacity: '0.6' }} className="text-amber-600">
+                                <span className="text-orange-600 mr-2! text-lg">⚠</span>
+                                Créditos insuficientes para enviar mensagens. <strong>Espere até amanhã para ganhar mais ou</strong>
+                                <button className="text-green-400 cursor-pointer hover:text-green-600 hover:underline" onClick={onOpenCredits}>
+                                  compre créditos
+                                </button>
+                                .
+                              </pre> :
+                              // MENSAGEM DE ERRO GENERICA
+                              <pre style={{ textWrap: 'auto', fontFamily: 'sans-serif', lineHeight: '1.5em', opacity: '0.6', color: 'orangered' }}>
+                                <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" className="inline! mr-2!">
+                                  <rect x="2" y="2" width="20" height="20" stroke="currentColor" strokeLinejoin="round" rx="3" />
+                                  <path d="M 6.256 17.4 C 7.892 15.888 9.883 15 12.03 15 C 14.174 15 16.166 15.888 17.8 17.4" stroke="currentColor" strokeWidth={1.5} />
+                                  <ellipse cx="8.757" cy="8.5" rx="1.5" ry="1.5" fill="currentColor" />
+                                  <ellipse cx="16" cy="8.5" rx="1.5" ry="1.5" fill="currentColor" />
+                                </svg>
+                                Desculpe, ocorreu um erro ao me conectar. Tente novamente.<br /> <strong className="ml-6.5! italic">- Seus créditos foram reenbolsados</strong>.
+                              </pre>
+                            :
+                            <ReactMarkdown
+                              remarkPlugins={[remarkMath]}
+                              rehypePlugins={[rehypeKatex]}
+                              components={{
+                                p: ({ ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                                ul: ({ ...props }) => <ul className="mb-2 list-disc" {...props} />,
+                                ol: ({ ...props }) => <ol className="mb-2 list-decimal" {...props} />,
+                                li: ({ ...props }) => <li className="mb-1" {...props} />,
+                                strong: ({ ...props }) => <strong className="font-semibold" style={{ color: 'var(--text-primary)' }} {...props} />,
+                                a: ({ ...props }) => <a style={{ color: 'var(--accent-primary)' }} className="hover:underline" {...props} />,
+                                h1: ({ ...props }) => <h1 className="mb-2 text-base font-bold" style={{ fontFamily: 'var(--font-display)' }} {...props} />,
+                                h2: ({ ...props }) => <h2 className="mb-2 text-sm font-bold" style={{ fontFamily: 'var(--font-display)' }} {...props} />,
+                                h3: ({ ...props }) => <h3 className="mb-1 text-sm font-semibold" {...props} />,
+                                code: ({ ...props }) => (
+                                  <code
+                                    className="px-1.5 py-0.5 rounded text-xs font-mono"
+                                    style={{ background: 'var(--bg-overlay)', color: '#a5b4fc' }}
+                                    {...props}
+                                  />
+                                ),
+                                pre: ({ ...props }) => (
+                                  <pre
+                                    className="rounded-xl p-3 overflow-x-auto text-xs font-mono my-2"
+                                    style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)' }}
+                                    {...props}
+                                  />
+                                ),
+                              }}
+                            >
+                              {msg.text.replace(/\$\$(.*?)\$\$/gs, "\n$$$1$$\n")}
+                            </ReactMarkdown>
                           : <pre style={{ textWrap: 'auto', fontFamily: 'sans-serif', lineHeight: '1.5em' }}>{msg.text}</pre>
                         }
                       </div>

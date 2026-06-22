@@ -72,7 +72,7 @@ export default function CreditsPanel({ onClose }: Props) {
                 {/* Botão flutante para fechar o painel de créditos, caso queira */}
                 <button
                     onClick={onClose}
-                    className="absolute z-50 right-4 top-4 bg-[#1e212b] text-zinc-400 rounded-full p-2! hover:bg-[#2a2d3a] hover:text-white transition-all duration-200 opacity-70"
+                    className="absolute z-50 right-4 top-4 bg-[#1e212b] text-zinc-400 rounded-md border border-gray-600 p-2! hover:bg-[#2a2d3a] hover:text-white transition-all duration-200 opacity-70"
                     title="Fechar"
                 >
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

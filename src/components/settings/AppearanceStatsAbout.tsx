@@ -149,7 +149,12 @@ export function AboutSection() {
         <div className="st-about-info">
           <p className="st-about-name relative">Mano IA <span className="st-about-badge absolute right-0  -top-0.5">Estável</span></p>
           <p className="st-about-version">Versão {__APP_VERSION__} · Plano Gratuito</p>
-          <p className="st-about-copy">© 2026 Mano IA · <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ display: 'inline', marginTop: '-1px' }}><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M3.6 9h16.8" /><path d="M3.6 15h16.8" /><path d="M11.5 3a17 17 0 0 0 0 18" /><path d="M12.5 3a17 17 0 0 1 0 18" /></svg> mano.ia.br</p>
+          <p className="st-about-copy">© 2026 Mano IA · <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ display: 'inline', marginTop: '-1px' }}><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M3.6 9h16.8" /><path d="M3.6 15h16.8" /><path d="M11.5 3a17 17 0 0 0 0 18" /><path d="M12.5 3a17 17 0 0 1 0 18" /></svg> <a href="https://mano.ia.br/" target="_blank">mano.ia.br</a></p>
+          <p className='st-about-copy'>
+            <svg width="12px" height="12px" viewBox="0 0 24 24" fill="none" className='inline mr-1! -mt-0.5!'>
+              <path d="M2 6s1.5-2 5-2 5 2 5 2v14s-1.5-1-5-1-5 1-5 1zm10 0s1.5-2 5-2 5 2 5 2v14s-1.5-1-5-1-5 1-5 1z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <a href="https://mano.ia.br/legal#terms" target="_blank">Termos de Uso</a>&nbsp; ·&nbsp; <a href="https://mano.ia.br/legal#privacy" target="_blank">Privacidade</a></p>
         </div>
 
       </div>

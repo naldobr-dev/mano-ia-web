@@ -140,7 +140,7 @@ export const uploadFileGemini = onCall(
     async (request) => {
         assertAuth(request); // Garante que só usuários logados chamem
 
-        const { base64Data, mimeType, size, isTestMode } = request.data as {
+        const { base64Data, mimeType, size } = request.data as {
             base64Data?: string;
             mimeType?: string;
             size?: number;
@@ -151,8 +151,21 @@ export const uploadFileGemini = onCall(
             throw new HttpsError("invalid-argument", "Dados do arquivo ausentes.");
         }
 
-        const apiKey = !isTestMode ? process.env.GEMINI_API_KEY : process.env.GEMINI_API_KEY_FREE;
-        if (!apiKey) throw new HttpsError("internal", "Chave do Gemini não configurada no servidor.");
+        // Captura a origem da requisição (ex: "http://localhost:5173" ou "https://mano.ia.br")
+        const origin = request.rawRequest?.headers?.origin || "";
+
+        // Verifica se a chamada veio do ambiente de desenvolvimento local
+        const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
+
+        // Escolhe a chave baseada na origem
+        const apiKey = isLocalhost
+            ? process.env.GEMINI_API_KEY_FREE
+            : process.env.GEMINI_API_KEY;
+
+        if (!apiKey) throw new HttpsError("internal", "Chave do Gemini não configurada.");
+
+        // Um log apenas para auditar no painel do Firebase qual chave foi usada
+        //console.log(`Requisição vinda de ${origin || "desconhecido"} - Usando API: ${isLocalhost ? "FREE" : "PAID"}`);
 
         try {
             const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
@@ -255,12 +268,25 @@ export const sendGeminiMessage = onCall(
     { region: "southamerica-east1", timeoutSeconds: 60 },
     async (request) => {
         const uid = assertAuth(request);
-        const { systemPrompt, historyContents, userParts, isTestMode } = request.data;
+        const { systemPrompt, historyContents, userParts } = request.data;
 
         if (!userParts) throw new HttpsError("invalid-argument", "Partes do usuário ausentes.");
 
-        const apiKey = !isTestMode ? process.env.GEMINI_API_KEY : process.env.GEMINI_API_KEY_FREE;
+        // Captura a origem da requisição (ex: "http://localhost:5173" ou "https://mano.ia.br")
+        const origin = request.rawRequest?.headers?.origin || "";
+
+        // Verifica se a chamada veio do ambiente de desenvolvimento local
+        const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
+
+        // Escolhe a chave baseada na origem
+        const apiKey = isLocalhost
+            ? process.env.GEMINI_API_KEY_FREE
+            : process.env.GEMINI_API_KEY;
+
         if (!apiKey) throw new HttpsError("internal", "Chave do Gemini não configurada.");
+
+        // Um log apenas para auditar no painel do Firebase qual chave foi usada
+        //console.log(`Requisição vinda de ${origin || "desconhecido"} - Usando API: ${isLocalhost ? "FREE" : "PAID"}`);
 
         const firestore = admin.firestore();
         const userRef = firestore.doc(`users/${uid}`);
@@ -540,14 +566,27 @@ export const generateGeminiPersona = onCall(
     async (request) => {
         assertAuth(request); // Garante que só usuários logados chamem
 
-        const { prompt, isTestMode } = request.data;
+        const { prompt } = request.data;
 
         if (!prompt || typeof prompt !== "string") {
             throw new HttpsError("invalid-argument", "Prompt ausente ou inválido.");
         }
 
-        const apiKey = !isTestMode ? process.env.GEMINI_API_KEY : process.env.GEMINI_API_KEY_FREE;
+        // Captura a origem da requisição (ex: "http://localhost:5173" ou "https://mano.ia.br")
+        const origin = request.rawRequest?.headers?.origin || "";
+
+        // Verifica se a chamada veio do ambiente de desenvolvimento local
+        const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
+
+        // Escolhe a chave baseada na origem
+        const apiKey = isLocalhost
+            ? process.env.GEMINI_API_KEY_FREE
+            : process.env.GEMINI_API_KEY;
+
         if (!apiKey) throw new HttpsError("internal", "Chave do Gemini não configurada.");
+
+        // Um log apenas para auditar no painel do Firebase qual chave foi usada
+        //console.log(`Requisição vinda de ${origin || "desconhecido"} - Usando API: ${isLocalhost ? "FREE" : "PAID"}`);
 
         const firestore = admin.firestore();
         const configAiRef = firestore.doc("settings/ai"); // Configurações globais
@@ -606,14 +645,27 @@ export const moderatePersona = onCall(
     async (request) => {
         assertAuth(request); // Garante que só usuários logados chamem
 
-        const { prompt, isTestMode } = request.data;
+        const { prompt } = request.data;
 
         if (!prompt || typeof prompt !== "string") {
             throw new HttpsError("invalid-argument", "Prompt ausente ou inválido.");
         }
 
-        const apiKey = !isTestMode ? process.env.GEMINI_API_KEY : process.env.GEMINI_API_KEY_FREE;
+        // Captura a origem da requisição (ex: "http://localhost:5173" ou "https://mano.ia.br")
+        const origin = request.rawRequest?.headers?.origin || "";
+
+        // Verifica se a chamada veio do ambiente de desenvolvimento local
+        const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1");
+
+        // Escolhe a chave baseada na origem
+        const apiKey = isLocalhost
+            ? process.env.GEMINI_API_KEY_FREE
+            : process.env.GEMINI_API_KEY;
+
         if (!apiKey) throw new HttpsError("internal", "Chave do Gemini não configurada.");
+
+        // Um log apenas para auditar no painel do Firebase qual chave foi usada
+        //console.log(`Requisição vinda de ${origin || "desconhecido"} - Usando API: ${isLocalhost ? "FREE" : "PAID"}`);
 
         const firestore = admin.firestore();
         const configAiRef = firestore.doc("settings/ai"); // Configurações globais

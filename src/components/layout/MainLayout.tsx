@@ -257,7 +257,7 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
       if (error.code === "functions/resource-exhausted") {
         const errMsg: Message = {
           id: uid(), role: "assistant",
-          text: "Você está sem créditos para continuar a conversa. Espere até amanhã para receber mais créditos grátis, ou *Compre um pacote de créditos*.",
+          text: "[ERROR-NO-CASH] Você está sem créditos para continuar a conversa. Espere até amanhã para receber mais créditos grátis, ou *Compre um pacote de créditos*.",
           createdAt: Date.now(),
         };
         setMessages(prev => [...prev, errMsg]);
@@ -281,7 +281,7 @@ export default function MainLayout({ personas, onUpdatePersonas, onOpenSettings,
       console.error("Gemini error:", err);
       const errMsg: Message = {
         id: uid(), role: "assistant",
-        text: "Desculpe, ocorreu um erro ao me conectar. Tente novamente.\n - *Seus créditos foram reenbolsados.*",
+        text: "[ERROR] Desculpe, ocorreu um erro ao me conectar. Tente novamente.\n - *Seus créditos foram reenbolsados.*",
         createdAt: Date.now(),
       };
       setMessages(prev => [...prev, errMsg]);

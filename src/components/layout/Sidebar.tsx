@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useCreditos } from "../../hooks/useCredits";
 import { type Persona, type Conversation, epochToLocalTime } from "../../types";
+import ShareButton from "../share/ShareButton";
 import "./Sidebar.css";
 
 import {
@@ -215,6 +216,16 @@ export default function Sidebar({
   const [animating, setAnimating] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { totais: creditosTotais } = useCreditos();
+  const [sharePanelShow, setSharePanelShow] = useState(false);
+
+  useEffect(() => {
+    // 5 minutos = 5 * 60 * 1000 = 300000 milissegundos
+    const timer = setTimeout(() => {
+      setSharePanelShow(true);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const ANIM_MS = 260;
 
@@ -348,6 +359,13 @@ export default function Sidebar({
           </div>
 
           <div className="sidebar__footer">
+            {/* --- Botão de compartilhamento --- */}
+            {sharePanelShow && (
+              <ShareButton
+                onClose={() => setSharePanelShow(false)}
+              />
+            )}
+
             <button className="sidebar__new-btn flex flex-1 items-center justify-center" onClick={onNewPersona}>
               <UserPlusIcon className="size-5 -mt-0.5!" />
               &nbsp; Novo personagem</button>

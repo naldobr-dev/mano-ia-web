@@ -48,7 +48,7 @@
     font-style: italic;
     margin-right: 0.5rem;
     opacity: 0.7;
-    max-width: 500px;
+    max-width: 650px;
     padding-top: 1px;
     white-space: nowrap;
     overflow: hidden;
@@ -59,8 +59,9 @@
 
   @media (max-width: 680px) {
     .chat-header__status-description {
-      max-width: 160px;
+      max-width: 200px;
     }
+    .hide-on-mobile { display: none; }
   }
 
 .chat-header__btn {
@@ -199,7 +200,7 @@
   margin-top: 4px;
   margin-left: 10px;
 }
-.bubble-check { margin-left: 4px; color: #4f6ef7; }
+.bubble-check { margin-left: 4px; color: #4f6ef7; letter-spacing: -4px; }
 
 /* ─── Input ─── */
 .chat-input-area {
